@@ -1,6 +1,5 @@
 import { assert } from "chai";
 import EmptyComponent from "./components/EmptyComponent";
-import { Component, Entity, System, SystemManager } from "../../src";
 import EmptySystem from "./systems/EmptySystem";
 
 class SimpleEligibleSystem extends System {

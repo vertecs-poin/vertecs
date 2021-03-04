@@ -1,5 +1,3 @@
-import SimpleCounterComponent from "./CounterComponent";
-
 /**
  * Subclass of CounterComponent
  */

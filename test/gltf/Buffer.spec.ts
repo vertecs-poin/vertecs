@@ -1,4 +1,3 @@
-import { Buffer } from '../../src';
 import { assert } from 'chai';
 
 describe('Buffer', () => {

@@ -1,7 +1,6 @@
 import { assert } from "chai";
 import EmptyComponent from "./components/EmptyComponent";
 import SimpleCounterComponent from "./components/CounterComponent";
-import { Entity, System, SystemManager } from "../../src";
 import CounterUpdateSystem from "./systems/CounterUpdateSystem";
 
 class UpdateEntityOnEligibleSystem extends System {

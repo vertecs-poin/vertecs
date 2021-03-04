@@ -1,7 +1,6 @@
 import { assert } from 'chai';
 import EmptyComponent from './components/EmptyComponent';
 import SimpleCounterComponent from './components/CounterComponent';
-import { Component, Entity } from "../../src";
 
 describe('Entity', () => {
   let entity: Entity;

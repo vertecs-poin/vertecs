@@ -1,5 +1,3 @@
-import Component from '../../../src/ecs/Component';
-
 /**
  * Empty component
  */

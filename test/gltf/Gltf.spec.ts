@@ -1,6 +1,5 @@
 import { assert } from 'chai';
 import minimal from './minimal.json';
-import { Entity, GLTF, Primitive, Transform } from "../../src";
 
 describe('GLTF minimal file', () => {
   let gltf: Entity;

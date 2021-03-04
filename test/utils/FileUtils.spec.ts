@@ -1,5 +1,4 @@
 import { assert } from 'chai';
-import { Entity, Transform } from "../../src";
 
 describe('FileUtils', () => {
   const entity = new Entity();

@@ -1,5 +1,3 @@
-import { Component } from "../../../src";
-
 /**
  * Simple component with a counter and increment method
  */

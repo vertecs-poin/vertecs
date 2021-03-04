@@ -1,6 +1,5 @@
 import { assert } from 'chai';
 import { mat4, quat, vec3 } from 'gl-matrix';
-import { Entity, Transform } from "../../src";
 
 describe('Transform', () => {
   const entity = new Entity();

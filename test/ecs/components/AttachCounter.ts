@@ -1,5 +1,3 @@
-import { Component, Entity } from "../../../src";
-
 /**
  * Component that tracks the number of time it was attached to an entity
  */

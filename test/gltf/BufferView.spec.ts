@@ -1,6 +1,5 @@
 import { assert } from 'chai';
 import { before } from 'mocha';
-import { BufferView, Buffer } from "../../src";
 
 describe('BufferView', () => {
   let buffer: Buffer;

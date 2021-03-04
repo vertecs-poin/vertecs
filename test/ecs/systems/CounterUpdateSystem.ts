@@ -1,5 +1,3 @@
-import { System } from "../../../src";
-
 /**
  * System that tracks the number of times it has been updated
  */

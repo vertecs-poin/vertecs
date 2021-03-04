@@ -1,5 +1,3 @@
-import { System } from "../../../src";
-
 /**
  * Empty system
  */
