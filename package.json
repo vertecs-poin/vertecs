@@ -1,0 +1,35 @@
+{
+  "name": "vertecstest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "test": "mocha -r esm -r ts-node/register ./test/**/*.spec.ts --experimental-json-modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vertecs-poin/vertecs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vertecs-poin/vertecs/issues"
+  },
+  "homepage": "https://github.com/vertecs-poin/vertecs#readme",
+  "dependencies": {
+    "@types/gl-matrix": "^3.2.0",
+    "gl-matrix": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.15",
+    "@types/mocha": "^8.2.1",
+    "chai": "^4.3.3",
+    "esm": "^3.2.25",
+    "mocha": "^8.3.0",
+    "ts-node": "^9.1.1"
+  }
+}

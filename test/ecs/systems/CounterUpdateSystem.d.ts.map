@@ -1,0 +1,1 @@
+{"version":3,"file":"CounterUpdateSystem.d.ts","sourceRoot":"","sources":["CounterUpdateSystem.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,MAAM,EAAE,MAAM,kBAAkB,CAAC;AAE1C;;GAEG;AACH,MAAM,CAAC,OAAO,OAAO,mBAAoB,SAAQ,MAAM;IAC9C,OAAO,EAAE,MAAM,CAAC;;IAOvB,IAAI,IAAI,OAAO,CAAC,IAAI,CAAC;IAId,MAAM,IAAI,IAAI;CAGtB"}

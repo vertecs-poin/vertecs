@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ES2020",
+    "lib": ["es7", "dom"],
+    "outDir": "./dist",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  }
+}
