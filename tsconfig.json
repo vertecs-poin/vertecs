@@ -1,17 +1,27 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES6",
     "module": "ES2020",
-    "lib": ["es7", "dom"],
+    "lib": [
+      "es7",
+      "dom"
+    ],
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./src",
     "strict": true,
+    "noImplicitAny": true,
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
-  }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "test/**/*.spec.ts"
+  ]
 }

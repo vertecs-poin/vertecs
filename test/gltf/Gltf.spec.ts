@@ -1,8 +1,7 @@
 import {assert} from 'chai';
-import {Entity} from '../../src/ecs';
 import {Gltf} from '../../src/gltf';
-import {Primitive} from '../../src/gltf';
 import {Transform} from '../../src/math';
+import {Entity} from '../../src/ecs';
 import minimal from './minimal.json';
 
 describe('GLTF minimal file', () => {
@@ -29,38 +28,5 @@ describe('GLTF minimal file', () => {
 
 		assert.equal(scene.name, 'test scene');
 		assert.isNotNull(transform);
-	});
-
-	it('should have the correct node', () => {
-		const scene = gltf.children[0];
-		const mesh = scene.children[0];
-
-		const transform = scene.getComponent(Transform);
-
-		assert.isNotNull(transform);
-		assert.equal(mesh.name, 'test node');
-	});
-
-	it('should have the correct mesh', () => {
-		const scene = gltf.children[0];
-		const node = scene.children[0];
-		const mesh = node.children[0];
-
-		const transform = scene.getComponent(Transform);
-
-		assert.isNotNull(transform);
-		assert.equal(mesh.name, 'test mesh');
-	});
-
-	it('should have the correct primitive', () => {
-		const scene = gltf.children[0];
-		const node = scene.children[0];
-		const mesh = node.children[0];
-		const primitiveNode = mesh.children[0];
-
-		const primitive = primitiveNode.getComponent(Primitive);
-
-		assert.isNotNull(primitive);
-		assert.equal(primitiveNode.name, 'test primitive');
 	});
 });
