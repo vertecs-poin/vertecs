@@ -1,15 +1,27 @@
-import { vec3, vec4 } from 'gl-matrix';
-import Component from '../ecs/Component';
-import { GLTFOptions } from './GLTFFactory';
-import PbrMetallicRoughness from './PbrMetallicRoughness';
-import Texture from './Texture';
-import { TextureInfo } from './TextureInfo';
+import { vec3, vec4 } from "gl-matrix";
+import Component from "../ecs/Component";
+import { GltfOptions } from "./GltfFactory";
+import PbrMetallicRoughness, { PbrMetallicRoughnessJson } from "./PbrMetallicRoughness";
+import Texture from "./Texture";
+import { TextureInfo, TextureInfoJson } from "./TextureInfo";
+import { PrimitiveJson } from "./Primitive";
 
-interface MaterialOptions extends GLTFOptions {
+interface MaterialOptions extends GltfOptions {
   pbrMetallicRoughness?: PbrMetallicRoughness,
   normalTexture?: TextureInfo,
   occlusionTexture?: TextureInfo,
   emissiveTexture?: TextureInfo,
+  emissiveFactor?: vec3,
+  alphaMode?: string,
+  alphaCutOff?: number,
+  doubleSided?: boolean
+}
+
+export interface MaterialJson {
+  pbrMetallicRoughness: PbrMetallicRoughnessJson;
+  normalTexture?: TextureInfoJson,
+  occlusionTexture?: TextureInfoJson,
+  emissiveTexture?: TextureInfoJson,
   emissiveFactor?: vec3,
   alphaMode?: string,
   alphaCutOff?: number,
@@ -39,7 +51,7 @@ export default class Material extends Component {
     this.#normalTexture = options?.normalTexture;
     this.#occlusionTexture = options?.occlusionTexture;
     this.#emissiveTexture = options?.emissiveTexture;
-    this.#alphaMode = options?.alphaMode ?? 'OPAQUE';
+    this.#alphaMode = options?.alphaMode ?? "OPAQUE";
     this.#alphaCutOff = options?.alphaCutOff ?? 0.5;
     this.#doubleSided = options?.doubleSided ?? false;
     this.#emissiveFactor = options?.emissiveFactor ?? [1, 1, 1];
@@ -51,7 +63,7 @@ export default class Material extends Component {
     return material;
   }
 
-  public static fromJson(json: any, textures: Texture[]): Material {
+  public static fromJson(json: MaterialJson, textures: Texture[]): Material {
     let emissiveFactor;
     if (json.emissiveFactor) {
       emissiveFactor = vec3.fromValues(json.emissiveFactor[0], json.emissiveFactor[1], json.emissiveFactor[2]);
@@ -65,7 +77,7 @@ export default class Material extends Component {
       emissiveFactor,
       alphaMode: json.alphaMode,
       alphaCutOff: json.alphaCutOff,
-      doubleSided: json.doubleSided,
+      doubleSided: json.doubleSided
     });
   }
 
@@ -75,12 +87,12 @@ export default class Material extends Component {
    */
   public static fromBaseColor(baseColorFactor: vec4): Material {
     return new Material({
-      pbrMetallicRoughness: new PbrMetallicRoughness({ baseColorFactor }),
+      pbrMetallicRoughness: new PbrMetallicRoughness({ baseColorFactor })
     });
   }
 
-  public static toJson(json: any) {
-
+  public static toJson(json: PrimitiveJson) {
+    throw new Error("Not yet implemented");
   }
 
   public get baseColorFactor(): vec4 {
@@ -127,6 +139,10 @@ export default class Material extends Component {
     return this.#doubleSided;
   }
 
+  public set doubleSided(value: boolean) {
+    this.#doubleSided = value;
+  }
+
   public set pbrMetallicRoughness(value: PbrMetallicRoughness) {
     this.#pbrMetallicRoughness = value;
   }
@@ -149,9 +165,5 @@ export default class Material extends Component {
 
   public set alphaCutOff(value: number) {
     this.#alphaCutOff = value;
-  }
-
-  public set doubleSided(value: boolean) {
-    this.#doubleSided = value;
   }
 }

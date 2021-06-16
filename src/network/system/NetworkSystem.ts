@@ -1,7 +1,7 @@
-import { System } from "../../ecs";
 import { Serializable } from "../component/Serializable";
+import { System } from "../../ecs";
 
-export default abstract class NetworkSystem extends System {
+export default abstract class NetworkSystem extends System<[Serializable]> {
 
   protected constructor(tps?: number) {
     super([Serializable], tps);
@@ -14,6 +14,6 @@ export default abstract class NetworkSystem extends System {
   public async initialize(): Promise<void> {
   }
 
-  public onUpdate(timePassed: number): void {
+  public onUpdate(): void {
   }
 }

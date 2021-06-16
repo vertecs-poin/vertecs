@@ -9,7 +9,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "tsc --watch",
-    "test": "mocha --require ts-node/register -r tsconfig-paths/register --experimental-json-modules ./test/**/*.spec.ts",
+    "test": "mocha --require ts-node/register -r tsconfig-paths/register --experimental-json-modules ./src/test/**/*.spec.ts",
     "coverage": "nyc npm run test"
   },
   "dependencies": {
@@ -49,6 +49,6 @@
     "ts-loader": "^8.0.17",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^4.2.3"
+    "typescript": "^4.3.2"
   }
 }

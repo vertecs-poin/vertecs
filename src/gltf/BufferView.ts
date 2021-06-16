@@ -1,15 +1,22 @@
-import GLTFObject from "./GLTFObject";
+import GltfObject from "./GltfObject";
 import Buffer from "./Buffer";
-import GLTFExtension from "./GLTFExtension";
-import { Format, GLTFOptions } from "./GLTFFactory";
+import GltfExtension from "./GltfExtension";
+import { Format, GltfOptions } from "./GltfFactory";
 
-type BufferViewOptions = GLTFOptions & {
+type BufferViewOptions = GltfOptions & {
   byteOffset?: number,
   byteStride?: number,
   target?: number
 }
 
-export default class BufferView extends GLTFObject {
+export interface BufferViewJson extends GltfOptions {
+  buffer: number;
+  byteOffset: number;
+  byteLength: number;
+  target?: number;
+}
+
+export default class BufferView extends GltfObject {
   /**
    * The target buffer
    * @private
@@ -54,7 +61,7 @@ export default class BufferView extends GLTFObject {
     return new BufferView(buffer, json.byteLength, { ...json });
   }
 
-  public static toJSON(bufferView: BufferView, format: Format, extensions?: GLTFExtension[]): any {
+  public static toJson(bufferView: BufferView, format: Format, extensions?: GltfExtension[]): any {
     return {
       name: bufferView.name,
       buffer: Buffer.toJson(bufferView.buffer, format),
@@ -105,12 +112,24 @@ export default class BufferView extends GLTFObject {
     return this.#byteOffset;
   }
 
+  public set byteOffset(value: number) {
+    this.#byteOffset = value;
+  }
+
   public get byteLength(): number {
     return this.#byteLength;
   }
 
+  public set byteLength(value: number) {
+    this.#byteLength = value;
+  }
+
   public get byteStride(): number {
     return this.#byteStride;
+  }
+
+  public set byteStride(value: number) {
+    this.#byteStride = value;
   }
 
   public get buffer(): Buffer {
@@ -119,17 +138,5 @@ export default class BufferView extends GLTFObject {
 
   public set buffer(value: Buffer) {
     this.#buffer = value;
-  }
-
-  public set byteOffset(value: number) {
-    this.#byteOffset = value;
-  }
-
-  public set byteLength(value: number) {
-    this.#byteLength = value;
-  }
-
-  public set byteStride(value: number) {
-    this.#byteStride = value;
   }
 }

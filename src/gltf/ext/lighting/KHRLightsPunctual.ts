@@ -1,9 +1,9 @@
 // import Component from '@ecs/Component';
 // import { vec3 } from 'gl-matrix';
 // import Entity from '@ecs/Entity';
-// import GLTFExtension from '@gltf/ext/GLTFExtension';
+// import GltfExtension from '@gltf/ext/GltfExtension';
 //
-// export class KHRLightsPunctual extends GLTFExtension {
+// export class KHRLightsPunctual extends GltfExtension {
 //   private readonly lights: Component[];
 //
 //   public constructor() {

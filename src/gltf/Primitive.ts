@@ -1,15 +1,20 @@
 import Accessor from "./Accessor";
 import Buffer from "./Buffer";
 import BufferView from "./BufferView";
-import { GLTFOptions } from "./GLTFFactory";
-import GLTFExtension from "./GLTFExtension";
+import { GltfOptions } from "./GltfFactory";
+import GltfExtension from "./GltfExtension";
 import Material from "./Material";
 
-interface PrimitiveOptions extends GLTFOptions {
+interface PrimitiveOptions extends GltfOptions {
   attributes: Map<string, Accessor>,
   indices?: Accessor,
   mode?: number,
   material?: Material
+}
+
+export interface PrimitiveJson {
+  attributes: any;
+  indices: number;
 }
 
 export default class Primitive {
@@ -33,7 +38,7 @@ export default class Primitive {
     this.#material = options?.material ?? new Material();
   }
 
-  public static fromJSON(json: any, accessors: Accessor[], materials: Material[]): Primitive {
+  public static fromJson(json: any, accessors: Accessor[], materials?: Material[]): Primitive {
     const jsonAttributes: Map<string, number> = new Map(Object.entries(json.attributes));
     const attributes = new Map<string, Accessor>();
 
@@ -48,11 +53,11 @@ export default class Primitive {
       extensions: json.extensions,
       extras: json.extras,
       name: json.name,
-      material: materials[json.material]
+      material: materials ? materials[json.material] : undefined
     });
   }
 
-  public static toJSON(primitive: Primitive, extensions: GLTFExtension) {
+  public static toJSON(primitive: Primitive, extensions: GltfExtension) {
     return {};
   }
 

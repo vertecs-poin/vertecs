@@ -15,9 +15,9 @@ export default class AnimationSystem extends System<[Transform, AnimationCompone
 
   }
 
-  public onUpdate(timePassed: number): void {
-    this.$entities.forEach(([transform, animationComponent]) => {
-      animationComponent.update(transform, timePassed / 1000);
+  public onUpdate(entities: [Transform, AnimationComponent][], timePassed: number): void {
+    entities.forEach(([transform, animationComponent]) => {
+      animationComponent.update(timePassed / 1000);
     });
   }
 }

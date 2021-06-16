@@ -1,9 +1,9 @@
 import { vec4 } from "gl-matrix";
-import { GLTFOptions } from "./GLTFFactory";
+import { GltfOptions } from "./GltfFactory";
 import Texture from "./Texture";
-import { TextureInfo } from "./TextureInfo";
+import { TextureInfo, TextureInfoJson } from "./TextureInfo";
 
-export interface PBRMetallicRoughnessOptions extends GLTFOptions {
+export interface PBRMetallicRoughnessOptions extends GltfOptions {
   baseColorFactor?: vec4;
   baseColorTexture?: TextureInfo;
   metallicFactor?: number;
@@ -11,11 +11,33 @@ export interface PBRMetallicRoughnessOptions extends GLTFOptions {
   metallicRoughnessTexture?: TextureInfo;
 }
 
+export interface PbrMetallicRoughnessJson {
+  baseColorFactor?: number[];
+  baseColorTexture?: TextureInfoJson;
+  metallicFactor?: number;
+  roughnessFactor?: number;
+  metallicRoughnessTexture?: TextureInfoJson;
+  extensions?: object;
+  extras?: any;
+}
+
 export default class PbrMetallicRoughness {
+  /**
+   * The material's base color factor.
+   * @private
+   */
   #baseColorFactor: vec4;
 
+  /**
+   * The metalness of the material.
+   * @private
+   */
   #metallicFactor: number;
 
+  /**
+   * The roughness of the material.
+   * @private
+   */
   #roughnessFactor: number;
 
   #baseColorTextureInfo?: TextureInfo;
@@ -30,13 +52,13 @@ export default class PbrMetallicRoughness {
     this.#metallicRoughnessTextureInfo = options?.metallicRoughnessTexture;
   }
 
-  public static fromJson(json: any, textures: Texture[]): PbrMetallicRoughness {
+  public static fromJson(json: PbrMetallicRoughnessJson, textures: Texture[]): PbrMetallicRoughness {
     return new PbrMetallicRoughness({
-      baseColorFactor: json.baseColorFactor ? [json.baseColorFactor[0], json.baseColorFactor[1], json.baseColorFactor[2], json.baseColorFactor[3]] : [1, 1, 1, 1],
-      baseColorTexture: json.baseColorTexture && TextureInfo.fromJson(json.baseColorTexture, textures),
-      metallicFactor: json.metallicFactor,
-      roughnessFactor: json.roughnessFactor,
-      metallicRoughnessTexture: json.metallicRoughnessTextureInfo && TextureInfo.fromJson(json.metallicRoughnessTextureInfo, textures)
+      baseColorFactor: json?.baseColorFactor ? [json.baseColorFactor[0], json.baseColorFactor[1], json.baseColorFactor[2], json.baseColorFactor[3]] : [1, 1, 1, 1],
+      baseColorTexture: json?.baseColorTexture && TextureInfo.fromJson(json.baseColorTexture, textures),
+      metallicFactor: json?.metallicFactor,
+      roughnessFactor: json?.roughnessFactor,
+      metallicRoughnessTexture: json?.metallicRoughnessTexture && TextureInfo.fromJson(json.metallicRoughnessTexture, textures)
     });
   }
 

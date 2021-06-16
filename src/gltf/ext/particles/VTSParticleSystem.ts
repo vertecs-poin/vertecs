@@ -1,8 +1,8 @@
 // import Entity from '@ecs/Entity';
 // import Material from '@gltf/Material';
-// import GLTFExtension from '@gltf/ext/GLTFExtension';
+// import GltfExtension from '@gltf/ext/GltfExtension';
 //
-// export class VTSParticleSystem extends GLTFExtension {
+// export class VTSParticleSystem extends GltfExtension {
 //   public constructor() {
 //     super('VTS_particle_system');
 //   }

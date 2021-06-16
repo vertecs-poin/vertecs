@@ -1,6 +1,6 @@
 // import Entity from "@ecs/Entity";
 // import System from "@ecs/System";
-// import { Light } from "../component/Light";
+// import { Light } from "../components/Light";
 // import { LightScene } from "./LightScene";
 //
 // export class LightingSystem extends System {

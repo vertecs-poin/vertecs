@@ -1,5 +1,10 @@
-import GLTFExtension from './GLTFExtension';
-import Texture from './Texture';
+import GltfExtension from "./GltfExtension";
+import Texture from "./Texture";
+
+export interface TextureInfoJson {
+  index: number;
+  texCoord?: number;
+}
 
 export class TextureInfo {
   #texture: Texture;
@@ -11,14 +16,18 @@ export class TextureInfo {
     this.#texCoord = texCoord || 0;
   }
 
-  public static fromJson(json: any, textures: Texture[]): TextureInfo {
+  public static fromJson(json: TextureInfoJson, textures: Texture[]): TextureInfo {
+    const texture = textures[json.index];
+    if (!texture) {
+      throw new Error(`Texture with index ${json.index} not found !`);
+    }
     return new TextureInfo(
       textures[json.index],
-      json.texCoord,
+      json.texCoord
     );
   }
 
-  public static toJson(textureInfo: TextureInfo, textures: Texture[], extensionHandlers?: GLTFExtension[]): any {
+  public static toJson(textureInfo: TextureInfo, textures: Texture[], extensionHandlers?: GltfExtension[]): TextureInfoJson {
     const extensions: any[] = [];
     extensionHandlers?.forEach((extensionHandler) => {
       const extension = extensionHandler.exportTextureInfo(textureInfo);
@@ -27,11 +36,7 @@ export class TextureInfo {
       }
     });
 
-    return {
-      undefined,
-      textureInfo,
-      extensions,
-    };
+    throw new Error("Not yet implemented");
   }
 
   public get texture(): Texture {

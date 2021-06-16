@@ -1,15 +1,22 @@
-import GLTFObject from "./GLTFObject";
-import GLTFExtension from "./GLTFExtension";
-import { GLTFOptions } from "./GLTFFactory";
+import GltfObject from "./GltfObject";
+import GltfExtension from "./GltfExtension";
+import { GltfOptions } from "./GltfFactory";
 
-type SamplerOptions = GLTFOptions & {
-  magFilter: number,
-  minFilter: number,
-  wrapS: number,
-  wrapT: number,
+type SamplerOptions = GltfOptions & {
+  magFilter: number;
+  minFilter: number;
+  wrapS: number;
+  wrapT: number;
 }
 
-export default class Sampler extends GLTFObject {
+export interface SamplerJson extends GltfOptions {
+  magFilter: number;
+  minFilter: number;
+  wrapS: number;
+  wrapT: number;
+}
+
+export default class Sampler extends GltfObject {
   #magFilter: number;
 
   #minFilter: number;
@@ -27,7 +34,7 @@ export default class Sampler extends GLTFObject {
     this.#wrapT = options?.wrapT ?? 10497;
   }
 
-  public static toJSON(sampler: Sampler, extensions?: GLTFExtension[]): any {
+  public static toJson(sampler: Sampler, extensions?: GltfExtension[]): any {
     return {
       magFilter: sampler.magFilter,
       minFilter: sampler.minFilter,

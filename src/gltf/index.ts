@@ -1,11 +1,10 @@
 import Accessor from "./Accessor";
 import BufferView from "./BufferView";
 import CameraComponent from "./CameraComponent";
-import { Format } from "./GLTFFactory";
-import GLTFFactory from "./GLTFFactory";
-import GLTFExtension from "./GLTFExtension";
+import GltfFactory, { Format } from "./GltfFactory";
+import GltfExtension from "./GltfExtension";
 import Material from "./Material";
-import GLTFObject from "./GLTFObject";
+import GltfObject from "./GltfObject";
 import NodeFactory from "./NodeFactory";
 import PbrMetallicRoughness from "./PbrMetallicRoughness";
 import Primitive from "./Primitive";
@@ -23,9 +22,9 @@ export {
   BufferView,
   CameraComponent,
   Format,
-  GLTFFactory,
-  GLTFExtension,
-  GLTFObject,
+  GltfFactory,
+  GltfExtension,
+  GltfObject,
   Material,
   Mesh,
   NodeFactory,

@@ -1,17 +1,22 @@
-import { Format, GLTFOptions } from "./GLTFFactory";
-import GLTFExtension from './GLTFExtension';
-import GLTFObject from './GLTFObject';
-import Sampler from './Sampler';
+import { Format, GltfOptions } from "./GltfFactory";
+import GltfExtension from "./GltfExtension";
+import GltfObject from "./GltfObject";
+import Sampler from "./Sampler";
 
-interface TextureOptions extends GLTFOptions {
+interface TextureOptions extends GltfOptions {
   sampler?: Sampler,
   source?: ImageBitmap,
+}
+
+export interface TextureJson extends GltfOptions {
+  sampler: number;
+  source: number;
 }
 
 /**
  * A texture and its sampler
  */
-export default class Texture extends GLTFObject {
+export default class Texture extends GltfObject {
   /**
    * The sampler used by this texture
    * @private
@@ -40,7 +45,7 @@ export default class Texture extends GLTFObject {
     });
   }
 
-  public static fromJson(json: any, samplers: Sampler[], images: ImageBitmap[]): Texture {
+  public static fromJson(json: TextureJson, samplers: Sampler[], images: ImageBitmap[]): Texture {
     return new Texture({
       sampler: samplers[json.sampler] ?? new Sampler(),
       source: images[json.source],
@@ -50,14 +55,8 @@ export default class Texture extends GLTFObject {
     });
   }
 
-  public static toJSON(texture: Texture, samplers: Sampler[], images: ImageBitmap[], format: Format, extensions?: GLTFExtension[]): any {
-    return {
-      sampler: undefined,
-      source: undefined,
-      name: texture.name,
-      extensions: extensions?.map(extension => extension.exportTexture(texture)),
-      extras: undefined,
-    };
+  public static toJson(texture: Texture, samplers: Sampler[], images: ImageBitmap[], format: Format, extensions?: GltfExtension[]): TextureJson {
+    throw new Error("Not yet implemented");
   }
 
   public get sampler(): Sampler {

@@ -1,11 +1,10 @@
 import BufferView from "./BufferView";
-import GLTFObject from "./GLTFObject";
-import GLTFExtension from "./GLTFExtension";
-import { Format, GLTFOptions } from "./GLTFFactory";
+import GltfObject from "./GltfObject";
+import GltfExtension from "./GltfExtension";
+import { Format, GltfOptions } from "./GltfFactory";
 import Buffer from "./Buffer";
-import TypedArray = NodeJS.TypedArray;
 
-interface AccessorOptions extends GLTFOptions {
+interface AccessorOptions extends GltfOptions {
   byteOffset?: number;
   normalized?: boolean;
   min?: number[];
@@ -13,7 +12,16 @@ interface AccessorOptions extends GLTFOptions {
   sparse?: object;
 }
 
-export default class Accessor extends GLTFObject {
+export interface AccessorJson {
+  bufferView?: number;
+  byteOffset?: number;
+  componentType?: number;
+  type: string;
+  min?: number[];
+  max?: number[];
+}
+
+export default class Accessor extends GltfObject {
   /**
    * The index of the bufferView
    * @private
@@ -51,13 +59,13 @@ export default class Accessor extends GLTFObject {
   #type: string;
 
   /**
-   * Maximum value of each component in this attribute
+   * Maximum value of each components in this attribute
    * @private
    */
   #max?: number[];
 
   /**
-   * Minimum value of each component in this attribute
+   * Minimum value of each components in this attribute
    * @private
    */
   #min?: number[];
@@ -89,10 +97,10 @@ export default class Accessor extends GLTFObject {
     return new Accessor(bufferView, count, componentType, type, { ...json });
   }
 
-  public static toJSON(accessor: Accessor, format: Format, extensions?: GLTFExtension[]): any {
+  public static toJson(accessor: Accessor, format: Format, extensions?: GltfExtension[]): any {
     return {
       name: accessor.name,
-      bufferView: BufferView.toJSON(accessor.#bufferView, format),
+      bufferView: BufferView.toJson(accessor.#bufferView, format),
       byteOffset: accessor.byteOffset,
       componentType: accessor.componentType,
       normalized: accessor.normalized,
@@ -108,13 +116,11 @@ export default class Accessor extends GLTFObject {
 
   public getDataAsFloat32Array(): Float32Array {
     const arrayBuffer = this.#bufferView.getArrayBuffer(
-      this.getComponentTypeSize() * this.getComponentTypeSizeInBytes(),
+      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
       this.getByteLength(),
       this.#byteOffset
     );
-    return new Float32Array(
-      arrayBuffer
-    );
+    return new Float32Array(arrayBuffer);
   }
 
   public getDataAsFloatArray(): number[] {
@@ -122,79 +128,91 @@ export default class Accessor extends GLTFObject {
   }
 
   public getDataAsInt16Array(): Int16Array {
-    const resultView = new Int16Array(this.getByteLength() / 2);
-    const dataView = new Int16Array(this.#bufferView.getArrayBuffer(this.getComponentTypeSize() * this.getComponentTypeSizeInBytes()));
+    const arrayBuffer = this.#bufferView.getArrayBuffer(
+      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      this.getByteLength(),
+      this.#byteOffset
+    );
+    return new Int16Array(arrayBuffer);
+  }
 
-    if (this.bufferView.byteStride) {
-      let sourceIndex = 0;
-      let destinationIndex = 0;
-      const elementCount = this.count;
-      const step = this.bufferView.byteStride;
-      for (let elementIndex = 0; elementIndex < elementCount; elementIndex++) {
-        sourceIndex = this.byteOffset + elementIndex * step;
-        destinationIndex = elementIndex * step;
-        resultView.set(dataView.slice(sourceIndex, sourceIndex + step), destinationIndex);
-      }
-    } else {
-      resultView.set(dataView.slice((this.byteOffset / 2), (this.byteOffset / 2) + this.getByteLength()), 0);
-    }
+  public getDataAsInt32Array(): Int32Array {
+    const arrayBuffer = this.#bufferView.getArrayBuffer(
+      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      this.getByteLength(),
+      this.#byteOffset
+    );
+    return new Int32Array(arrayBuffer);
+  }
 
-    return resultView;
+  public getDataAsUint16Array(): Uint16Array {
+    const arrayBuffer = this.#bufferView.getArrayBuffer(
+      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      this.getByteLength(),
+      this.#byteOffset
+    );
+    return new Uint16Array(arrayBuffer);
+  }
+
+  public getDataAsUint32Array(): Uint16Array {
+    const arrayBuffer = this.#bufferView.getArrayBuffer(
+      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      this.getByteLength(),
+      this.#byteOffset
+    );
+    return new Uint16Array(arrayBuffer);
   }
 
   public getDataAsInt8Array(): Int8Array {
-    const result = new ArrayBuffer(this.getByteLength());
-    const resultView = new Int8Array(result);
-
-    const dataView = new Int8Array(this.#bufferView.getData());
-
-    if (this.bufferView.byteStride) {
-      let sourceIndex = 0;
-      let destinationIndex = 0;
-      const elementCount = this.count;
-      const step = this.bufferView.byteStride;
-      for (let elementIndex = 0; elementIndex < elementCount; elementIndex++) {
-        sourceIndex = this.byteOffset + elementIndex * step;
-        destinationIndex = elementIndex * step;
-        for (let i = 0; i < step; i++) {
-          resultView.set(dataView.slice(sourceIndex, sourceIndex + step), destinationIndex);
-        }
-      }
-    } else {
-      resultView.set(dataView.slice(this.byteOffset, this.byteOffset + this.getByteLength()), 0);
-    }
-
-    return resultView;
+    const arrayBuffer = this.#bufferView.getArrayBuffer(
+      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      this.getByteLength(),
+      this.#byteOffset
+    );
+    return new Int8Array(arrayBuffer);
   }
 
   public getDataAsIntArray(): number[] {
     return Array.from(this.getDataAsInt16Array());
   }
 
+  public getData(): ArrayBuffer {
+    return this.#bufferView.getArrayBuffer(
+      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      this.getByteLength(),
+      this.#byteOffset
+    );
+  }
+
   /**
    * Get the accessor's byte length
    */
   public getByteLength(): number {
-    return this.#count * this.getComponentTypeSizeInBytes() * this.getComponentTypeSize();
+    return this.#count * this.getComponentByteSize();
   }
 
-  // TODO: RENAME
-  public getComponentTypeSizeInBytes(): number {
+  /**
+   * Get components size in bytes
+   */
+  public getComponentByteSize(): number {
+    return this.getComponentTypeByteSize() * this.getAttributeTypeByteSize();
+  }
+
+  /**
+   * Return components type size in bytes
+   */
+  public getComponentTypeByteSize(): number {
     switch (this.#componentType) {
-      case 5120: {
+      case 5120:
         return 1;
-      }
-      case 5121: {
+      case 5121:
         return 1;
-      }
       case 5122:
-      case 5123: {
+      case 5123:
         return 2;
-      }
       case 5125:
-      case 5126: {
+      case 5126:
         return 4;
-      }
       default: {
         throw new Error(`Accessor component type not found: ${this.#componentType}`);
       }
@@ -202,28 +220,24 @@ export default class Accessor extends GLTFObject {
   }
 
   // TODO: RENAME
-  public getComponentTypeSize(): number {
+  public getAttributeTypeByteSize(): number {
     switch (this.#type) {
-      case "SCALAR": {
+      case "SCALAR":
         return 1;
-      }
-      case "VEC2": {
+      case "VEC2":
         return 2;
-      }
-      case "VEC3": {
+      case "VEC3":
         return 3;
-      }
-      case "VEC4" || "MAT2": {
+      case "VEC4":
         return 4;
-      }
-      case "MAT3": {
+      case "MAT2":
+        return 4;
+      case "MAT3":
         return 9;
-      }
-      case "MAT4": {
+      case "MAT4":
         return 16;
-      }
       default: {
-        throw new Error("Accessor type not found");
+        throw new Error("Accessor type not found: " + this.#type);
       }
     }
   }

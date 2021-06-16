@@ -1,5 +1,5 @@
 import Transform from '../math/components/Transform';
-import GLTFExtension from './GLTFExtension';
+import GltfExtension from './GltfExtension';
 import { Entity } from "../ecs";
 
 export default class Scene {
@@ -10,7 +10,7 @@ export default class Scene {
     return scene;
   }
 
-  public static toJson(entity: Entity, extensionHandlers?: GLTFExtension[]): any {
+  public static toJson(entity: Entity, extensionHandlers?: GltfExtension[]): any {
     const extensions: any[] = [];
     extensionHandlers?.forEach((extensionHandler) => {
       const extension = extensionHandler.exportScene(entity);

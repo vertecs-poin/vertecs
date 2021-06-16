@@ -1,23 +1,25 @@
-import AnimationSamplerTarget from "./AnimationSamplerTarget";
+import AnimationChannel from "./AnimationChannel";
 import { Transform } from "../math";
 
 export default class Animation {
-  #targets: AnimationSamplerTarget[];
+  #channels: AnimationChannel[];
   #replay: boolean;
   #length: number;
 
   public constructor() {
-    this.#targets = [];
+    this.#channels = [];
     this.#replay = false;
     this.#length = 0;
   }
 
-  public update(transform: Transform, timePassed: number) {
+  public update(timePassed: number) {
     if (this.#replay) {
+      // Replay animation when all channels finish
       let maxTime = 0;
-      this.targets.forEach(target => {
-        let input = target.sampler.input;
-        let lastTime = input[input.length - 1];
+      this.channels.forEach(channel => {
+        const input = channel.sampler.input;
+        // TODO: getter for channel duration
+        const lastTime = input[input.length - 1];
         if (lastTime > maxTime) {
           maxTime = lastTime;
         }
@@ -25,16 +27,24 @@ export default class Animation {
       timePassed %= maxTime;
     }
 
-    this.targets.forEach(target => {
-      switch (target.path) {
+    this.channels.forEach(channel => {
+      const transform = channel.node.getComponent(Transform);
+      if (!transform) {
+        throw new Error("Animation target doesn't have a transform attached");
+      }
+
+      switch (channel.path) {
         case "rotation":
-          transform.setRotationQuat(target.sampler.getRotation(timePassed));
+          transform.setRotationQuat(channel.sampler.getRotation(timePassed));
           break;
         case "translation":
-          transform.setPosition(target.sampler.getTranslation(timePassed));
+          transform.setPosition(channel.sampler.getTranslation(timePassed));
+          break;
+        case "scale":
+          transform.setScale(channel.sampler.getTranslation(timePassed));
           break;
         default:
-          throw new Error(`Sampler path not supported ${target.path}`);
+          throw new Error(`Sampler path not supported ${channel.path}`);
       }
     });
   }
@@ -47,11 +57,11 @@ export default class Animation {
     this.#replay = value;
   }
 
-  public get targets(): AnimationSamplerTarget[] {
-    return this.#targets;
+  public get channels(): AnimationChannel[] {
+    return this.#channels;
   }
 
-  public set targets(value: AnimationSamplerTarget[]) {
-    this.#targets = value;
+  public set channels(channels: AnimationChannel[]) {
+    this.#channels = channels;
   }
 }

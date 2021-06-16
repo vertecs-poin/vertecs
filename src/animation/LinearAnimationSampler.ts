@@ -21,7 +21,7 @@ export default class LinearAnimationSampler extends AnimationSampler {
     const nextTranslation = this.$output.slice(3 * nextTimeIndex, 3 * nextTimeIndex + 3);
 
     const result = new Float32Array(3);
-    let interpolationValue = MathUtils.map(previousTime, currentTime, nextTime);
+    const interpolationValue = MathUtils.map(previousTime, currentTime, nextTime);
 
     vec3.lerp(result, previousTranslation, nextTranslation, interpolationValue);
 

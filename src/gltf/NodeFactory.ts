@@ -1,41 +1,52 @@
 import Entity from "../ecs/Entity";
 import Transform from "../math/components/Transform";
 import CameraComponent from "./CameraComponent";
-import GLTFExtension from "./GLTFExtension";
-import Primitive from "./Primitive";
+import GltfExtension from "./GltfExtension";
 import Mesh from "./Mesh";
-import { AnimationComponent } from "../animation";
+import { GltfOptions } from "./GltfFactory";
+
+export interface NodeJson extends GltfOptions {
+  camera?: number;
+  children?: number[];
+  skin?: number;
+  matrix?: number[];
+  mesh?: number;
+  rotation?: number[];
+  scale?: number[];
+  translation?: number[];
+  weights?: number[];
+}
 
 export default class NodeFactory {
-  public static fromJson(json: any, cameras: CameraComponent[], meshes: Mesh[], extensionHandlers?: GLTFExtension[]): Entity {
+  public static DEFAULT_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+  public static DEFAULT_ROTATION = [0, 0, 0, 1];
+  public static DEFAULT_SCALE = [1, 1, 1];
+  public static DEFAULT_TRANSLATION = [0, 0, 0];
+
+  public static fromJson(json: NodeJson, cameras: CameraComponent[], meshes: Mesh[], extensionHandlers?: GltfExtension[]): Entity {
     const node = new Entity({ name: json.name });
 
     let transform;
     if (json.matrix) {
-      transform = Transform.fromMat4(json.matrix);
+      transform = Transform.fromMat4(json.matrix ?? NodeFactory.DEFAULT_MATRIX);
     } else {
       transform = new Transform(
         undefined,
-        json.translation?.map(Number),
-        json.rotation?.map(Number),
-        json.scale?.map(Number)
+        json.translation?.map(Number) ?? NodeFactory.DEFAULT_TRANSLATION,
+        json.rotation?.map(Number) ?? NodeFactory.DEFAULT_ROTATION,
+        json.scale?.map(Number) ?? NodeFactory.DEFAULT_SCALE
       );
     }
     node.addComponent(transform);
 
-    const camera = cameras[json.camera];
+    const camera = cameras[json.camera ?? 0];
     if (camera) {
       node.addComponent(camera);
     }
 
-    const mesh = meshes[json.mesh];
-    if (mesh) {
-      node.addComponent(mesh);
-    }
-
     if (json.extensions) {
       extensionHandlers?.forEach((handler) => {
-        const extension = json.extensions.find((extension: string) => extension === handler.$name);
+        const extension = json.extensions?.find((extension: string) => extension === handler.$name);
         if (extension) handler.importNode(node, extension);
       });
     }
@@ -43,31 +54,29 @@ export default class NodeFactory {
     return node;
   }
 
-  public static toJSON(node: Entity, json: any, extensions?: GLTFExtension[]): any {
+  public static toJson(node: Entity, extensions?: GltfExtension[]): NodeJson {
     const children = [];
-    node.children.forEach((child) => {
+    node.children.forEach(child => {
       // Check if child is a Node
-      if (child.getComponent(Primitive)) {
-        children.push(NodeFactory.toJSON(child, {}, extensions));
-      }
+      // TODO: Check why primitive is not a component
+      // if (child.getComponent(Primitive)) {
+      //   children.push(NodeFactory.toJson(child, extensions));
+      // }
     });
 
     const transform = node.getComponent(Transform);
     const cameraLens = node.getComponent(CameraComponent);
 
+    // TODO: check IndexedCollection
     return {
-      camera: undefined,
       children: [],
-      skin: undefined,
       matrix: undefined,
-      mesh: undefined,
-      rotation: transform?.rotation,
-      scale: transform?.scaling,
-      translation: transform?.position,
-      weights: undefined,
+      rotation: [1, 0, 0, 1],
+      scale: [1, 0, 1],
+      translation: [1, 1, 1],
       name: node.name,
       extensions: extensions?.map((extension) => extension.exportNode(node)),
-      extras: undefined
+      extras: undefined, camera: 0, mesh: 0, skin: 0, weights: []
     };
   }
 }

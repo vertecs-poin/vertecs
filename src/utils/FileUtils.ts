@@ -11,7 +11,7 @@ export default class FileUtils {
         return dataUriToBuffer(uri);
       }
     }
-    return (await axios.get(uri)).data;
+    return (await axios.get(uri, { responseType: "arraybuffer" })).data;
   }
 
   public static async loadBlobFromUri(uri: string): Promise<Blob> {

@@ -1,7 +1,7 @@
-// import { AmbientLight } from "../component/AmbientLight";
-// import { DirectionalLight } from "../component/DirectionalLight";
-// import { Light } from "../component/Light";
-// import { PointLight } from "../component/PointLight";
+// import { AmbientLight } from "../components/AmbientLight";
+// import { DirectionalLight } from "../components/DirectionalLight";
+// import { Light } from "../components/Light";
+// import { PointLight } from "../components/PointLight";
 //
 // export class LightScene extends UniformBufferObject {
 // 	public static readonly MAX_AMBIENT_LIGHTS = 2;

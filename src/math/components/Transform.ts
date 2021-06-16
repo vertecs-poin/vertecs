@@ -1,5 +1,6 @@
-import { mat4, quat, vec3, mat3 } from "gl-matrix";
-import { Component, Entity } from "../../ecs";
+import { mat4, quat, vec3 } from "gl-matrix";
+import { Entity } from "../../ecs";
+import Component from "../../ecs/Component";
 
 /**
  * A transform represents a position, rotation and a scale, it may have a parent Transform,
@@ -225,6 +226,7 @@ export default class Transform extends Component {
     this.#dirty = true;
   }
 
+  // TODO: rename to getGlobalTransform ???
   /**
    * Get the model to world matrix of this transform and updates it dirty
    * It update all the parents until no one is dirty
@@ -291,6 +293,10 @@ export default class Transform extends Component {
     vec3.div(scale, [1, 1, 1], mat4.getScaling(currentScale, modelToWorldMatrix));
 
     this.scale(scale);
+  }
+
+  public get parent(): Transform | undefined {
+    return this.#parent;
   }
 
   /**

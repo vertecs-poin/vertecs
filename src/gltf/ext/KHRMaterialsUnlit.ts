@@ -1,9 +1,9 @@
 // import Entity from '@ecs/Entity';
-// import GLTFExtension from '@gltf/GLTFExtension';
+// import GltfExtension from '@gltf/GltfExtension';
 // import Material from '@gltf/Material';
 // import Primitive from '@gltf/Primitive';
 //
-// export class KHRMaterialsUnlit extends GLTFExtension {
+// export class KHRMaterialsUnlit extends GltfExtension {
 //   public constructor() {
 //     super('KHR_lights_punctual');
 //   }

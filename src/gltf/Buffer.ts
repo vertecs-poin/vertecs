@@ -1,9 +1,14 @@
-import GLTFObject from "./GLTFObject";
-import GLTFExtension from "./GLTFExtension";
+import GltfObject from "./GltfObject";
+import GltfExtension from "./GltfExtension";
 import FileUtils from "../utils/FileUtils";
-import { Format, GLTFOptions } from "./GLTFFactory";
+import { Format, GltfOptions } from "./GltfFactory";
 
-export default class Buffer extends GLTFObject {
+export interface BufferJson extends GltfOptions {
+  uri: string;
+  byteLength: number;
+}
+
+export default class Buffer extends GltfObject {
   /**
    * The binary geometry, animation, or skins data.
    * @private
@@ -16,15 +21,15 @@ export default class Buffer extends GLTFObject {
    */
   #byteLength: number;
 
-  public constructor(data: ArrayBuffer, byteLength: number, options?: GLTFOptions) {
+  public constructor(data: ArrayBuffer, byteLength: number, options?: GltfOptions) {
     super(options);
 
     this.#data = data;
     this.#byteLength = byteLength;
   }
 
-  public static async fromJson(json: any): Promise<Buffer> {
-    const buffer = await FileUtils.loadArrayBufferFromUri(json.uri);
+  public static async fromJson(json: BufferJson, path?: string): Promise<Buffer> {
+    const buffer = await FileUtils.loadArrayBufferFromUri((path ?? "") + json.uri);
     if (!buffer) {
       throw new Error("Gltf import error: Buffer data not found");
     }
@@ -32,13 +37,13 @@ export default class Buffer extends GLTFObject {
     return new Buffer(buffer, buffer.byteLength, { ...json });
   }
 
-  public static toJson(buffer: Buffer, format: Format, extensions?: GLTFExtension[]): any {
+  public static toJson(buffer: Buffer, format: Format, extensions?: GltfExtension[]): BufferJson {
     switch (format) {
       case Format.Embedded: {
         return {
-          name: buffer,
-          data: buffer.data,
+          uri: "",
           byteLength: buffer.byteLength,
+          name: buffer.name,
           extensions: extensions?.map((extension) => extension.exportBuffer(buffer)),
           extras: undefined
         };

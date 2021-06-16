@@ -2,9 +2,15 @@ import LinearAnimationSampler from "./LinearAnimationSampler";
 import AnimationSampler from "./AnimationSampler";
 import { Accessor } from "../gltf";
 
+export interface AnimationSamplerJson {
+  input: number;
+  output: number;
+  interpolation: string;
+}
+
 export default class AnimationSamplerFactory {
 
-  public static fromJson(json: any, accessors: Accessor[]): AnimationSampler {
+  public static fromJson(json: AnimationSamplerJson, accessors: Accessor[]): AnimationSampler {
     const input = accessors[json.input].getDataAsFloatArray();
     const output = accessors[json.output].getDataAsFloat32Array();
     switch (json.interpolation) {
@@ -12,12 +18,16 @@ export default class AnimationSamplerFactory {
         return new LinearAnimationSampler(input, output);
       }
       default: {
-        throw new Error(`Interpolation method unsupported: ${json.interpolation}`);
+        return new LinearAnimationSampler(input, output);
       }
     }
   }
 
-  public static toJson(): any {
-
+  public static toJson(): AnimationSamplerJson {
+    return {
+      input: 0,
+      output: 0,
+      interpolation: "LINEAR"
+    };
   }
 }

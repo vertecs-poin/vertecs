@@ -1,7 +1,6 @@
 import { Component } from "../../ecs";
 import { Transform } from "../../math";
 import Animation from "../Animation";
-import Performance from "../../utils/Performance";
 
 export default class AnimationComponent extends Component {
   readonly #animations: Animation[];
@@ -15,16 +14,29 @@ export default class AnimationComponent extends Component {
     this.#currentTime = -1;
   }
 
-  public playAnimation(animationIndex: number) {
+  public playAnimation(animationIndex: number, options?: { replay?: boolean }) {
     this.#playingAnimation = animationIndex;
     this.#currentTime = 0;
+    const animation = this.animations[this.#playingAnimation];
+    if (!animation) {
+      return console.error(`Animation not found with index : ${this.#playingAnimation} ignoring play...`);
+    }
+    animation.replay = options?.replay ?? false;
   }
 
-  public update(transform: Transform, timePassed: number) {
-    if (this.#playingAnimation < 0) return;
+  public update(timePassed: number): void {
+    if (this.#playingAnimation < 0) {
+      // No active animation
+      return;
+    }
+    const currentAnimation = this.animations[this.#playingAnimation];
+
+    if (!currentAnimation) {
+      return console.error(`Animation not found with index : ${this.#playingAnimation} ignoring update...`);
+    }
 
     this.#currentTime += timePassed;
-    this.animations[this.#playingAnimation].update(transform, this.#currentTime);
+    currentAnimation.update(this.#currentTime);
   }
 
   public get animations(): Animation[] {
