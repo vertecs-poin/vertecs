@@ -4,7 +4,6 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/node_modules/gl-matrix" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/test/gltf/samples/glTF-Sample-Models" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/../../gl-matrix" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../webgpu-samples" vcs="Git" />
   </component>
 </project>

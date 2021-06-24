@@ -13,6 +13,5 @@
     <orderEntry type="module" module-name="vertecs-example" />
     <orderEntry type="module" module-name="webgpu-samples" />
     <orderEntry type="module" module-name="vertecs-examples" />
-    <orderEntry type="module" module-name="gl-matrix" />
   </component>
 </module>

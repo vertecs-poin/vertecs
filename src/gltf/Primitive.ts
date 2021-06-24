@@ -63,12 +63,12 @@ export default class Primitive {
     return new Primitive(
       attributes,
       {
-        indices: json.indices ? accessors[json.indices] : undefined,
+        indices: (json.indices !== undefined) ? accessors[json.indices] : undefined,
         mode: json.mode,
         extensions: json.extensions,
         extras: json.extras,
         name: json.name,
-        material: json.material && materials ? materials[json.material] : undefined
+        material: (materials && json.material !== undefined) ? materials[json.material] : undefined
       }
     );
   }
