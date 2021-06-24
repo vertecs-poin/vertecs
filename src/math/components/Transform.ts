@@ -141,7 +141,7 @@ export default class Transform extends Component {
     this.setWorldPosition([x, y, z]);
   }
 
-  public setWorldRotation(rotation: quat) {
+  public setWorldRotation(rotation: quat): void {
     // TODO: Cache this
     const worldRotation = mat4.getRotation(quat.create(), this.getModelToWorldMatrix());
     // TODO: Cache this
@@ -226,9 +226,9 @@ export default class Transform extends Component {
     this.#dirty = true;
   }
 
-  // TODO: rename to getGlobalTransform ???
+  // TODO: Change name to update
   /**
-   * Get the model to world matrix of this transform and updates it dirty
+   * Get the model to world matrix of this transform and updates it
    * It update all the parents until no one is dirty
    */
   public getModelToWorldMatrix(): mat4 {

@@ -1,12 +1,19 @@
-import WebGpuSystem from "../systems/WebGpuSystem";
 import { Accessor } from "../../gltf";
 import { mat4 } from "gl-matrix";
+import WebGpuSystem from "../render/systems/WebGpuSystem";
 
 export default class GpuBufferUtils {
 
-  public static updateBufferFromMat4(source: mat4, destination: GPUBuffer, destinationOffset: number, byteCount: number): void {
+  /**
+   * Update a WebGPU buffer from a mat4
+   * @param source The mat4 to send to buffer
+   * @param destination The buffer to update, must have a size of 64 bytes or more
+   * @param destinationOffset The buffer's offset
+   */
+  public static updateBufferFromMat4(source: mat4, destination: GPUBuffer, destinationOffset: number): void {
     const buffer = GpuBufferUtils.createFromFloat32Array(Float32Array.from(source), GPUBufferUsage.COPY_SRC);
-    GpuBufferUtils.updateBuffer(buffer, destination, destinationOffset, byteCount);
+    GpuBufferUtils.updateBuffer(buffer, destination, destinationOffset, 64);
+    buffer.destroy();
   }
 
   public static updateBuffer(source: GPUBuffer, destination: GPUBuffer, destinationOffset: number, byteCount: number): void {
@@ -65,7 +72,7 @@ export default class GpuBufferUtils {
         // Return a 16bits array instead
         if (usage === GPUBufferUsage.INDEX) {
           const dataAsUint16Array = accessor.getDataAsInt8Array();
-          new Uint16Array(buffer.getMappedRange()).set(new Uint16Array(dataAsUint16Array))
+          new Uint16Array(buffer.getMappedRange()).set(new Uint16Array(dataAsUint16Array));
         } else {
           new Uint8Array(buffer.getMappedRange()).set(new Uint8Array(data));
         }

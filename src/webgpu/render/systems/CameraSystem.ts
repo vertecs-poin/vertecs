@@ -1,8 +1,8 @@
-import { CameraComponent } from "../../gltf";
-import System from "../../ecs/System";
-import Entity from "../../ecs/Entity";
+import { CameraComponent } from "../../../gltf";
+import System from "../../../ecs/System";
+import Entity from "../../../ecs/Entity";
 import WebGpuSystem from "./WebGpuSystem";
-import { Transform } from "../../math";
+import { Transform } from "../../../math";
 
 export default class CameraSystem extends System<[CameraComponent, Transform]> {
 

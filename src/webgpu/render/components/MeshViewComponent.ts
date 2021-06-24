@@ -1,8 +1,8 @@
-import { Mesh } from "../../gltf";
-import { Transform } from "../../math";
 import PrimitiveViewComponent from "./PrimitiveViewComponent";
-import { Component, Entity } from "../../ecs";
-import { Skin } from "../../skinning";
+import { Mesh } from "../../../gltf";
+import { Component, Entity } from "../../../ecs";
+import { Transform } from "../../../math";
+import { Skin } from "../../../skinning";
 
 export default class MeshViewComponent extends Component {
   readonly #mesh?: Mesh;

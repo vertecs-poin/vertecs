@@ -1,10 +1,11 @@
 import glslang, { Glslang } from "@webgpu/glslang/dist/web-devel-onefile/glslang";
-import System from "../../ecs/System";
+import System from "../../../ecs/System";
 import MeshViewComponent from "../components/MeshViewComponent";
-import Entity from "../../ecs/Entity";
-import GpuBufferUtils from "../utils/GpuBufferUtils";
-import { Transform } from "../../math";
-import { CameraComponent, Mesh } from "../../gltf";
+import Entity from "../../../ecs/Entity";
+import GpuBufferUtils from "../../utils/GpuBufferUtils";
+import { Transform } from "../../../math";
+import { CameraComponent, Mesh } from "../../../gltf";
+import { LightSystem } from "../../lighting";
 
 export default class WebGpuSystem extends System<[Transform, Mesh]> {
   public static canvas: HTMLCanvasElement;
@@ -22,20 +23,29 @@ export default class WebGpuSystem extends System<[Transform, Mesh]> {
   public meshViews: [MeshViewComponent, Transform][];
 
   public static cameraEntity: Entity;
-
   public static cameraBuffer: GPUBuffer;
+
+  public static lightSceneBuffer: GPUBuffer;
 
   public constructor(tps?: number) {
     super([Mesh, Transform], tps);
     this.meshViews = [];
   }
 
-  public initializeCamera(): void {
-    const cameraComponent = new CameraComponent("orthographic");
-    WebGpuSystem.cameraEntity = new Entity();
+  public initializeLightScene(): void {
+    WebGpuSystem.lightSceneBuffer = WebGpuSystem.device.createBuffer({
+      size: LightSystem.MAX_BYTE_SIZE,
+      mappedAtCreation: false,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+  }
 
-    const transform = new Transform(undefined, [0, 0, 1]);
+  public initializeCamera(): void {
+    const cameraComponent = new CameraComponent("perspective");
+    WebGpuSystem.cameraEntity = new Entity();
+    const transform = new Transform(undefined, [0, 2, 10]);
     WebGpuSystem.cameraEntity.addComponent(transform);
+    WebGpuSystem.cameraEntity.addComponent(cameraComponent);
 
     WebGpuSystem.cameraBuffer = WebGpuSystem.device.createBuffer({
       size: 16 * 4 * 2,
@@ -46,14 +56,12 @@ export default class WebGpuSystem extends System<[Transform, Mesh]> {
     GpuBufferUtils.updateBufferFromMat4(
       cameraComponent.getViewMatrix(transform),
       WebGpuSystem.cameraBuffer,
-      0,
-      64
+      0
     );
 
     GpuBufferUtils.updateBufferFromMat4(
       cameraComponent.projection,
       WebGpuSystem.cameraBuffer,
-      64,
       64
     );
   }
@@ -67,19 +75,8 @@ export default class WebGpuSystem extends System<[Transform, Mesh]> {
     const cameraComponent = WebGpuSystem.cameraEntity.getComponent(CameraComponent);
 
     if (transform && cameraComponent) {
-      GpuBufferUtils.updateBufferFromMat4(
-        cameraComponent.getViewMatrix(transform),
-        WebGpuSystem.cameraBuffer,
-        0,
-        64
-      );
-
-      GpuBufferUtils.updateBufferFromMat4(
-        cameraComponent.projection,
-        WebGpuSystem.cameraBuffer,
-        64,
-        64
-      );
+      GpuBufferUtils.updateBufferFromMat4(cameraComponent.getViewMatrix(transform), WebGpuSystem.cameraBuffer, 0);
+      GpuBufferUtils.updateBufferFromMat4(cameraComponent.projection, WebGpuSystem.cameraBuffer, 64);
     }
   }
 
@@ -98,12 +95,13 @@ export default class WebGpuSystem extends System<[Transform, Mesh]> {
     WebGpuSystem.canvas = canvas;
     WebGpuSystem.context = context;
 
-    WebGpuSystem.swapChain = WebGpuSystem.context.configureSwapChain({
+    WebGpuSystem.swapChain = WebGpuSystem.context.configure({
       device: WebGpuSystem.device,
       format: "bgra8unorm" as GPUTextureFormat
     });
 
     this.initializeCamera();
+    // this.initializeLightScene();
   }
 
   // Add primitive view
@@ -121,9 +119,8 @@ export default class WebGpuSystem extends System<[Transform, Mesh]> {
   /**
    * Draw all active primitive views
    */
-  public onUpdate(entities: [Transform, Mesh][], timePassed: number, ): void {
-    WebGpuSystem.commandEncoder = WebGpuSystem.device.createCommandEncoder();
-    WebGpuSystem.textureView = WebGpuSystem.swapChain.getCurrentTexture().createView();
+  public onUpdate(entities: [Transform, Mesh][], timePassed: number): void {
+    WebGpuSystem.textureView = WebGpuSystem.context.getCurrentTexture().createView();
     WebGpuSystem.depthView = WebGpuSystem.device.createTexture({
       label: "depthTexture",
       size: { width: 640, height: 640, depthOrArrayLayers: 1 },
@@ -146,12 +143,14 @@ export default class WebGpuSystem extends System<[Transform, Mesh]> {
         depthStoreOp: "store",
 
         stencilLoadValue: 0,
-        stencilStoreOp: "store",
+        stencilStoreOp: "store"
       }
     };
+    WebGpuSystem.commandEncoder = WebGpuSystem.device.createCommandEncoder();
     WebGpuSystem.updateCamera();
 
     WebGpuSystem.renderPassEncoder = WebGpuSystem.commandEncoder.beginRenderPass(WebGpuSystem.renderPassDescriptor);
+
     this.meshViews.forEach(([meshViewComponent, transform]) => {
       meshViewComponent.draw(transform);
     });

@@ -1,11 +1,12 @@
-import { WebGpuSystem } from "../index";
-import { Primitive } from "../../gltf";
-import { Transform } from "../../math";
-import GpuBufferUtils from "../utils/GpuBufferUtils";
+import { WebGpuSystem } from "../../index";
+import { Primitive } from "../../../gltf";
+import { Transform } from "../../../math";
+import GpuBufferUtils from "../../utils/GpuBufferUtils";
 import axios from "axios";
-import PbrMetallicRoughnessUtils from "../views/PbrMetallicRoughnessUtils";
-import ShaderUtils from "../utils/ShaderUtils";
-import { Skin } from "../../skinning";
+import MaterialView from "../../views/MaterialView";
+import ShaderUtils from "../../utils/ShaderUtils";
+import { Skin } from "../../../skinning";
+import { LightSystem } from "../../lighting";
 
 export default class PrimitiveViewComponent {
   #pipeline?: GPURenderPipeline;
@@ -29,12 +30,17 @@ export default class PrimitiveViewComponent {
 
   #cameraBindGroup?: GPUBindGroup;
 
+  #lightSceneBindGroup?: GPUBindGroup;
+
   public constructor(primitive: Primitive, skin?: Skin) {
     this.#primitive = primitive;
     this.#attributeBuffers = [];
     this.#skin = skin;
 
-    console.warn(`Index buffer component size not supported : ${this.#primitive.indices?.getComponentTypeByteSize()}, defaulting to 2 bytes`);
+    const componentTypeByteSize = this.#primitive.indices?.getComponentTypeByteSize();
+    if (this.#primitive.indices && componentTypeByteSize !== 2 && componentTypeByteSize !== 4) {
+      console.warn(`Index buffer component size not supported : ${this.#primitive.indices?.getComponentTypeByteSize()}, defaulting to 2 bytes`);
+    }
   }
 
   public async initialize(): Promise<void> {
@@ -52,9 +58,9 @@ export default class PrimitiveViewComponent {
     );
 
     const material = this.#primitive.material;
-    this.#materialUniformBuffer = PbrMetallicRoughnessUtils.toBuffer(material.pbrMetallicRoughness);
+    this.#materialUniformBuffer = MaterialView.toBuffer(material);
     const baseColorTextureSampler = material.pbrMetallicRoughness.baseColorTextureInfo?.texture?.sampler;
-    const texture = material.pbrMetallicRoughness.baseColorTextureInfo?.texture?.source;
+    const textureBitmap = material.pbrMetallicRoughness.baseColorTextureInfo?.texture?.source;
 
     const buffers = this.getBufferVertexLayouts();
 
@@ -67,13 +73,26 @@ export default class PrimitiveViewComponent {
         entryPoint: "main"
       },
       fragment: {
-        targets: [{
-          format: "bgra8unorm"
-        }],
         module: WebGpuSystem.device.createShaderModule({
           code: WebGpuSystem.glslang.compileGLSL(sourceFragmentShader, "fragment", true)
         }),
-        entryPoint: "main"
+        entryPoint: "main",
+        targets: [{
+          format: "bgra8unorm",
+          blend: {
+            alpha: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            },
+            color: {
+              srcFactor: "src-alpha",
+              dstFactor: "one-minus-src-alpha",
+              operation: "add"
+            }
+          },
+          writeMask: GPUColorWrite.ALL
+        }]
       },
       depthStencil: {
         format: "depth24plus-stencil8",
@@ -96,7 +115,7 @@ export default class PrimitiveViewComponent {
     }
 
     // The position accessor is required, throw an error if not found
-    const positionAccessor = this.#primitive.attributes.get("POSITION");
+    const positionAccessor = this.#primitive.attributes.get("POSITION") || this.#primitive.attributes.get("XZ");
     if (!positionAccessor) {
       throw new Error("Position accessor not found");
     }
@@ -128,7 +147,7 @@ export default class PrimitiveViewComponent {
       }
     }];
 
-    if (baseColorTextureSampler && texture) {
+    if (baseColorTextureSampler && textureBitmap) {
       const descriptor: GPUSamplerDescriptor = {
         minFilter: PrimitiveViewComponent.getFilter(baseColorTextureSampler.minFilter),
         magFilter: PrimitiveViewComponent.getFilter(baseColorTextureSampler.magFilter),
@@ -140,14 +159,19 @@ export default class PrimitiveViewComponent {
       };
       this.#sampler = WebGpuSystem.device.createSampler(descriptor);
       this.#texture = WebGpuSystem.device.createTexture({
-        size: [texture.width, texture.height, 1],
+        size: [textureBitmap.width, textureBitmap.height, 1],
         format: "rgba8unorm",
-        usage: GPUTextureUsage.SAMPLED | GPUTextureUsage.COPY_DST
+        usage: GPUTextureUsage.SAMPLED | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
       });
 
-      WebGpuSystem.device.queue.copyImageBitmapToTexture(
-        { imageBitmap: texture }, { texture: this.#texture },
-        [texture.width, texture.height, 1]
+      if (!textureBitmap) {
+        throw new Error("Texture source not found");
+      }
+
+      WebGpuSystem.device.queue.copyExternalImageToTexture(
+        { source: textureBitmap },
+        { texture: this.#texture },
+        [textureBitmap.width, textureBitmap.height, 1]
       );
 
       entries.push({
@@ -177,6 +201,22 @@ export default class PrimitiveViewComponent {
       }]
     });
 
+    // const lightingDefinition = definitions.find(definition => definition === "USE_LIGHTING");
+    // if (lightingDefinition) {
+    //   this.#lightSceneBindGroup = WebGpuSystem.device.createBindGroup({
+    //     layout: this.#pipeline.getBindGroupLayout(3),
+    //     entries: [{
+    //       binding: 0,
+    //       resource: {
+    //         label: "lightSceneBindGroup",
+    //         buffer: WebGpuSystem.lightSceneBuffer,
+    //         size: LightSystem.MAX_BYTE_SIZE,
+    //         offset: 0
+    //       }
+    //     }]
+    //   });
+    // }
+
     // Rigging
     if (this.#skin) {
       this.#skinUniformBuffer = WebGpuSystem.device.createBuffer({
@@ -188,6 +228,7 @@ export default class PrimitiveViewComponent {
         entries: [{
           binding: 0,
           resource: {
+            label: "skinBindGroup",
             buffer: this.#skinUniformBuffer,
             size: 4 * 16 * 128,
             offset: 0
@@ -228,6 +269,8 @@ export default class PrimitiveViewComponent {
     switch (accessorName) {
       case "POSITION":
         return 0;
+      case "XZ":
+        return 0;
       case "NORMAL":
         return 1;
       case "TEXCOORD_0":
@@ -240,6 +283,8 @@ export default class PrimitiveViewComponent {
         return 5;
       case "TANGENT":
         return 6;
+      case "Y":
+        return 7;
       default: {
         throw new Error("Accessor's shader location not found: " + accessorName);
       }
@@ -265,11 +310,15 @@ export default class PrimitiveViewComponent {
       case "WEIGHTS_0":
         return "float32x4";
       case "COLOR_0":
-        return "float32x3";
+        return "float32x4";
       case "TANGENT":
         return "float32x4";
+      case "XZ":
+        return "float32x2";
+      case "Y":
+        return "float32";
       default: {
-        throw new Error("Accessor's shader location not found: " + accessorName);
+        throw new Error("Accessor's shader format not found: " + accessorName);
       }
     }
   }
@@ -364,6 +413,8 @@ export default class PrimitiveViewComponent {
 
       if (this.#skinBindGroup) {
         WebGpuSystem.renderPassEncoder.setBindGroup(3, this.#skinBindGroup);
+      } else if (this.#lightSceneBindGroup) {
+        WebGpuSystem.renderPassEncoder.setBindGroup(3, this.#lightSceneBindGroup);
       }
 
       if (this.#indexBuffer) {

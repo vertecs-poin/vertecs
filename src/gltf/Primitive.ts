@@ -6,55 +6,71 @@ import GltfExtension from "./GltfExtension";
 import Material from "./Material";
 
 interface PrimitiveOptions extends GltfOptions {
-  attributes: Map<string, Accessor>,
   indices?: Accessor,
   mode?: number,
   material?: Material
 }
 
-export interface PrimitiveJson {
+export interface PrimitiveJson extends GltfOptions {
   attributes: any;
-  indices: number;
+  indices?: number;
+  material?: number;
+  mode?: number;
 }
 
+/**
+ * Geometry to be rendered with the given material.
+ */
 export default class Primitive {
+  /**
+   * A dictionary object, where each key corresponds to mesh attribute and each value is the accessor containing attribute's data.
+   * @private
+   */
   #attributes: Map<string, Accessor>;
 
+  /**
+   * The accessor that contains the indices.
+   * @private
+   */
   #indices?: Accessor;
 
+  /**
+   * The material to apply to this primitive when rendering.
+   * @private
+   */
   #material: Material;
 
   /**
-   * The type of primitives to render
-   * @see https://github.com/KhronosGroup/glTF/tree/master/specification/2.0/#primitivemode
+   * The type of primitives to render.
    * @private
    */
   #mode: number;
 
-  public constructor(options: PrimitiveOptions) {
-    this.#attributes = options.attributes;
-    this.#indices = options.indices;
+  public constructor(attributes: Map<string, Accessor>, options?: PrimitiveOptions) {
+    this.#attributes = attributes;
+    this.#indices = options?.indices;
     this.#mode = options?.mode ?? 4;
     this.#material = options?.material ?? new Material();
   }
 
-  public static fromJson(json: any, accessors: Accessor[], materials?: Material[]): Primitive {
+  public static fromJson(json: PrimitiveJson, accessors: Accessor[], materials?: Material[]): Primitive {
     const jsonAttributes: Map<string, number> = new Map(Object.entries(json.attributes));
     const attributes = new Map<string, Accessor>();
-
     jsonAttributes.forEach((value, key) => {
       attributes.set(key, accessors[value]);
     });
 
-    return new Primitive({
+    return new Primitive(
       attributes,
-      indices: accessors[json.indices],
-      mode: json.mode,
-      extensions: json.extensions,
-      extras: json.extras,
-      name: json.name,
-      material: materials ? materials[json.material] : undefined
-    });
+      {
+        indices: json.indices ? accessors[json.indices] : undefined,
+        mode: json.mode,
+        extensions: json.extensions,
+        extras: json.extras,
+        name: json.name,
+        material: json.material && materials ? materials[json.material] : undefined
+      }
+    );
   }
 
   public static toJSON(primitive: Primitive, extensions: GltfExtension) {
@@ -104,11 +120,10 @@ export default class Primitive {
       attributes.set("TEXCOORD_0", accessor);
     }
 
-    return new Primitive({
+    return new Primitive(
       attributes,
-      mode: 4,
-      indices: indicesAccessor
-    });
+      { mode: 4, indices: indicesAccessor }
+    );
   }
 
   /**

@@ -6,3 +6,5 @@ export * from "./webgpu";
 export * from "./animation";
 export * from "./skinning";
 export * from "./input";
+export * from "./geometry";
+export * from "./physics";

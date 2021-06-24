@@ -8,8 +8,6 @@ export default class ShaderUtils {
    */
   public static getDefinitionsFromPrimitive(primitive: Primitive): string[] {
     const definitions = [];
-    // definitions.push("DEBUG_JOINTS_0");
-    // definitions.push("DEBUG_WEIGHTS_0");
 
     definitions.push(...ShaderUtils.DEFAULT_DEFINITIONS);
 
@@ -17,12 +15,22 @@ export default class ShaderUtils {
       definitions.push("HAS_BASE_COLOR_TEXTURE");
     }
 
+    // TODO: Refactor using a map
     if (primitive.attributes.get("WEIGHTS_0")) {
       definitions.push("IS_RIGGED");
     }
 
+    if (primitive.attributes.get("NORMAL")) {
+      // definitions.push("USE_LIGHTING");
+      // definitions.push("HAS_NORMAL");
+    }
+
     if (primitive.attributes.get("COLOR_0")) {
       definitions.push("HAS_COLOR");
+    }
+
+    if (primitive.attributes.get("XZ")) {
+      definitions.push("IS_TERRAIN");
     }
 
     return definitions;

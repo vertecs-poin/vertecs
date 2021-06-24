@@ -13,7 +13,7 @@ interface MaterialOptions extends GltfOptions {
   emissiveTexture?: TextureInfo,
   emissiveFactor?: vec3,
   alphaMode?: string,
-  alphaCutOff?: number,
+  alphaCutoff?: number,
   doubleSided?: boolean
 }
 
@@ -24,11 +24,15 @@ export interface MaterialJson {
   emissiveTexture?: TextureInfoJson,
   emissiveFactor?: vec3,
   alphaMode?: string,
-  alphaCutOff?: number,
+  alphaCutoff?: number,
   doubleSided?: boolean
 }
 
-export default class Material extends Component {
+export enum AlphaMode {
+  "OPAQUE", "BLEND", "MASK"
+}
+
+export default class Material {
   #pbrMetallicRoughness: PbrMetallicRoughness;
 
   #normalTexture?: TextureInfo;
@@ -39,20 +43,36 @@ export default class Material extends Component {
 
   #emissiveFactor: vec3;
 
-  #alphaMode: string;
+  #alphaMode: AlphaMode;
 
-  #alphaCutOff: number;
+  #alphaCutoff: number;
 
   #doubleSided: boolean;
 
   public constructor(options?: MaterialOptions) {
-    super();
     this.#pbrMetallicRoughness = options?.pbrMetallicRoughness ?? new PbrMetallicRoughness();
     this.#normalTexture = options?.normalTexture;
     this.#occlusionTexture = options?.occlusionTexture;
     this.#emissiveTexture = options?.emissiveTexture;
-    this.#alphaMode = options?.alphaMode ?? "OPAQUE";
-    this.#alphaCutOff = options?.alphaCutOff ?? 0.5;
+    switch (options?.alphaMode) {
+      case "OPAQUE": {
+        this.#alphaMode = AlphaMode.OPAQUE;
+        break;
+      }
+      case "BLEND": {
+        this.#alphaMode = AlphaMode.BLEND;
+        break;
+      }
+      case "MASK": {
+        this.#alphaMode = AlphaMode.MASK;
+        break;
+      }
+      default: {
+        this.#alphaMode = AlphaMode.OPAQUE;
+        break;
+      }
+    }
+    this.#alphaCutoff = options?.alphaCutoff ?? 0.5;
     this.#doubleSided = options?.doubleSided ?? false;
     this.#emissiveFactor = options?.emissiveFactor ?? [1, 1, 1];
   }
@@ -76,7 +96,7 @@ export default class Material extends Component {
       emissiveTexture: json.emissiveTexture && TextureInfo.fromJson(json.emissiveTexture, textures),
       emissiveFactor,
       alphaMode: json.alphaMode,
-      alphaCutOff: json.alphaCutOff,
+      alphaCutoff: json.alphaCutoff,
       doubleSided: json.doubleSided
     });
   }
@@ -127,12 +147,20 @@ export default class Material extends Component {
     return this.#emissiveTexture;
   }
 
-  public get alphaMode(): string {
+  public get alphaMode(): AlphaMode {
     return this.#alphaMode;
   }
 
+  public set alphaMode(value: AlphaMode) {
+    this.#alphaMode = value;
+  }
+
   public get alphaCutOff(): number {
-    return this.#alphaCutOff;
+    return this.#alphaCutoff;
+  }
+
+  public set alphaCutOff(value: number) {
+    this.#alphaCutoff = value;
   }
 
   public get doubleSided(): boolean {
@@ -157,13 +185,5 @@ export default class Material extends Component {
 
   public set emissiveTexture(value: TextureInfo | undefined) {
     this.#emissiveTexture = value;
-  }
-
-  public set alphaMode(value: string) {
-    this.#alphaMode = value;
-  }
-
-  public set alphaCutOff(value: number) {
-    this.#alphaCutOff = value;
   }
 }

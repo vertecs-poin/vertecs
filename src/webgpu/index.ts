@@ -1,6 +1,7 @@
 import GpuBuffer from "./utils/GpuBufferUtils";
-import WebGpuSystem from "./systems/WebGpuSystem";
-import MeshViewComponent from "./components/MeshViewComponent";
-import CameraSystem from "./systems/CameraSystem";
+import WebGpuSystem from "./render/systems/WebGpuSystem";
+import MeshViewComponent from "./render/components/MeshViewComponent";
+import CameraSystem from "./render/systems/CameraSystem";
 
 export { MeshViewComponent, WebGpuSystem, GpuBuffer, CameraSystem };
+export * from "./lighting";

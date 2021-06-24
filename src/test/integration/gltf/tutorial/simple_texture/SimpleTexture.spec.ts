@@ -1,7 +1,7 @@
 import simpleMeshes from "./simple_texture.json";
 import { assert } from "chai";
 import { Entity } from "../../../../../ecs";
-import { GltfFactory, Material } from "../../../../../gltf";
+import { GltfFactory, Mesh, Primitive } from "../../../../../gltf";
 
 describe("Simple texture", () => {
   let gltf: Entity;
@@ -12,7 +12,7 @@ describe("Simple texture", () => {
 
   it("should have the correct pbr material", () => {
     const mesh = gltf?.findChildByName("node0");
-    const material = mesh?.getComponent(Material);
+    const material = mesh?.getComponent(Mesh)?.primitives[0].material;
 
     assert.exists(mesh);
     assert.exists(material);

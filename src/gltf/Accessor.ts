@@ -12,13 +12,16 @@ interface AccessorOptions extends GltfOptions {
   sparse?: object;
 }
 
-export interface AccessorJson {
+export interface AccessorJson extends GltfOptions {
   bufferView?: number;
   byteOffset?: number;
-  componentType?: number;
+  componentType: number;
+  normalized?: boolean;
+  count: number;
   type: string;
-  min?: number[];
   max?: number[];
+  min?: number[];
+  sparse?: object;
 }
 
 export default class Accessor extends GltfObject {
@@ -36,6 +39,7 @@ export default class Accessor extends GltfObject {
 
   /**
    * The datatype of components in the attribute
+   * TODO: Use enum
    * @private
    */
   #componentType: number;
@@ -54,6 +58,7 @@ export default class Accessor extends GltfObject {
 
   /**
    * Specifies if the attribute is a scalar, vector, or matrix
+   * // TODO: Enum
    * @private
    */
   #type: string;
@@ -90,33 +95,38 @@ export default class Accessor extends GltfObject {
     this.#sparse = options?.sparse;
   }
 
-  public static fromJson(json: any, bufferViews: BufferView[]): Accessor {
-    const bufferView = bufferViews[json.bufferView];
+  public static fromJson(json: AccessorJson, bufferViews: BufferView[]): Accessor {
+    const bufferViewIndex = json.bufferView;
+    if (bufferViewIndex === undefined || bufferViewIndex === null || bufferViewIndex < 0) {
+      throw new Error("Undefined bufferView index not supported yet");
+    }
+    const bufferView = bufferViews[bufferViewIndex];
     const { count, type, componentType } = json;
 
     return new Accessor(bufferView, count, componentType, type, { ...json });
   }
 
-  public static toJson(accessor: Accessor, format: Format, extensions?: GltfExtension[]): any {
-    return {
-      name: accessor.name,
-      bufferView: BufferView.toJson(accessor.#bufferView, format),
-      byteOffset: accessor.byteOffset,
-      componentType: accessor.componentType,
-      normalized: accessor.normalized,
-      count: accessor.count,
-      type: accessor.type,
-      min: accessor.min,
-      max: accessor.max,
-      sparse: accessor.sparse,
-      extensions: extensions?.map((extension) => extension.exportAccessor(accessor)),
-      extras: accessor.extras
-    };
+  public static toJson(accessor: Accessor, format: Format, extensions?: GltfExtension[]): AccessorJson {
+    throw new Error("Not yet implemented");
+  }
+
+  public static fromPositions(positions: number[], type: string): Accessor {
+    const buffer = new Buffer(Float32Array.from(positions).buffer, positions.length * 4);
+    const bufferView = new BufferView(buffer, buffer.byteLength, { target: 34962 });
+
+    return new Accessor(bufferView, positions.length / Accessor.getAttributeTypeSize(type), 5126, type);
+  }
+
+  public static fromIndices(indices: number[]): Accessor {
+    const buffer = new Buffer(Int16Array.from(indices).buffer, indices.length * 2);
+    const bufferView = new BufferView(buffer, buffer.byteLength, { target: 34963 });
+
+    return new Accessor(bufferView, indices.length, 5123, "SCALAR");
   }
 
   public getDataAsFloat32Array(): Float32Array {
     const arrayBuffer = this.#bufferView.getArrayBuffer(
-      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      Accessor.getAttributeTypeSize(this.#type) * this.getComponentTypeByteSize(),
       this.getByteLength(),
       this.#byteOffset
     );
@@ -129,7 +139,7 @@ export default class Accessor extends GltfObject {
 
   public getDataAsInt16Array(): Int16Array {
     const arrayBuffer = this.#bufferView.getArrayBuffer(
-      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      Accessor.getAttributeTypeSize(this.#type) * this.getComponentTypeByteSize(),
       this.getByteLength(),
       this.#byteOffset
     );
@@ -138,7 +148,7 @@ export default class Accessor extends GltfObject {
 
   public getDataAsInt32Array(): Int32Array {
     const arrayBuffer = this.#bufferView.getArrayBuffer(
-      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      Accessor.getAttributeTypeSize(this.#type) * this.getComponentTypeByteSize(),
       this.getByteLength(),
       this.#byteOffset
     );
@@ -147,7 +157,7 @@ export default class Accessor extends GltfObject {
 
   public getDataAsUint16Array(): Uint16Array {
     const arrayBuffer = this.#bufferView.getArrayBuffer(
-      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      Accessor.getAttributeTypeSize(this.#type) * this.getComponentTypeByteSize(),
       this.getByteLength(),
       this.#byteOffset
     );
@@ -156,7 +166,7 @@ export default class Accessor extends GltfObject {
 
   public getDataAsUint32Array(): Uint16Array {
     const arrayBuffer = this.#bufferView.getArrayBuffer(
-      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      Accessor.getAttributeTypeSize(this.#type) * this.getComponentTypeByteSize(),
       this.getByteLength(),
       this.#byteOffset
     );
@@ -165,7 +175,7 @@ export default class Accessor extends GltfObject {
 
   public getDataAsInt8Array(): Int8Array {
     const arrayBuffer = this.#bufferView.getArrayBuffer(
-      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      Accessor.getAttributeTypeSize(this.#type) * this.getComponentTypeByteSize(),
       this.getByteLength(),
       this.#byteOffset
     );
@@ -178,7 +188,7 @@ export default class Accessor extends GltfObject {
 
   public getData(): ArrayBuffer {
     return this.#bufferView.getArrayBuffer(
-      this.getAttributeTypeByteSize() * this.getComponentTypeByteSize(),
+      Accessor.getAttributeTypeSize(this.#type) * this.getComponentTypeByteSize(),
       this.getByteLength(),
       this.#byteOffset
     );
@@ -195,7 +205,7 @@ export default class Accessor extends GltfObject {
    * Get components size in bytes
    */
   public getComponentByteSize(): number {
-    return this.getComponentTypeByteSize() * this.getAttributeTypeByteSize();
+    return this.getComponentTypeByteSize() * Accessor.getAttributeTypeSize(this.#type);
   }
 
   /**
@@ -220,8 +230,8 @@ export default class Accessor extends GltfObject {
   }
 
   // TODO: RENAME
-  public getAttributeTypeByteSize(): number {
-    switch (this.#type) {
+  public static getAttributeTypeSize(type: string): number {
+    switch (type) {
       case "SCALAR":
         return 1;
       case "VEC2":
@@ -237,7 +247,7 @@ export default class Accessor extends GltfObject {
       case "MAT4":
         return 16;
       default: {
-        throw new Error("Accessor type not found: " + this.#type);
+        throw new Error("Accessor type not found: " + type);
       }
     }
   }
@@ -274,24 +284,48 @@ export default class Accessor extends GltfObject {
     return this.#normalized;
   }
 
+  public set normalized(value: boolean) {
+    this.#normalized = value;
+  }
+
   public get count(): number {
     return this.#count;
+  }
+
+  public set count(value: number) {
+    this.#count = value;
   }
 
   public get type(): string {
     return this.#type;
   }
 
+  public set type(value: string) {
+    this.#type = value;
+  }
+
   public get max(): number[] | undefined {
     return this.#max;
+  }
+
+  public set max(value: number[] | undefined) {
+    this.#max = value;
   }
 
   public get min(): number[] | undefined {
     return this.#min;
   }
 
+  public set min(value: number[] | undefined) {
+    this.#min = value;
+  }
+
   public get sparse(): object | undefined {
     return this.#sparse;
+  }
+
+  public set sparse(value: object | undefined) {
+    this.#sparse = value;
   }
 
   public set bufferView(value: BufferView) {
@@ -304,29 +338,5 @@ export default class Accessor extends GltfObject {
 
   public set componentType(value: number) {
     this.#componentType = value;
-  }
-
-  public set normalized(value: boolean) {
-    this.#normalized = value;
-  }
-
-  public set count(value: number) {
-    this.#count = value;
-  }
-
-  public set type(value: string) {
-    this.#type = value;
-  }
-
-  public set max(value: number[] | undefined) {
-    this.#max = value;
-  }
-
-  public set min(value: number[] | undefined) {
-    this.#min = value;
-  }
-
-  public set sparse(value: object | undefined) {
-    this.#sparse = value;
   }
 }
