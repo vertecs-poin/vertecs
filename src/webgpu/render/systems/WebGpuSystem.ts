@@ -10,9 +10,8 @@ import { LightSystem } from "../../lighting";
 export default class WebGpuSystem extends System<[Transform, Mesh]> {
   public static canvas: HTMLCanvasElement;
   public static device: GPUDevice;
-  public static context: GPUCanvasContext;
+  public static context: GPUPresentationContext;
   public static glslang: Glslang;
-  public static swapChain: GPUSwapChain;
 
   public static renderPassDescriptor: GPURenderPassDescriptor;
   public static textureView: GPUTextureView;
@@ -90,12 +89,21 @@ export default class WebGpuSystem extends System<[Transform, Mesh]> {
       throw new Error("WebGPU not supported");
     }
 
+    device.lost.then((info) => {
+      console.error("Device was lost.", info);
+    });
+
+    device.addEventListener("uncapturederror", (event: unknown) => {
+      console.debug(event);
+    });
+
     WebGpuSystem.glslang = await glslang();
     WebGpuSystem.device = device;
     WebGpuSystem.canvas = canvas;
     WebGpuSystem.context = context;
 
-    WebGpuSystem.swapChain = WebGpuSystem.context.configure({
+    // TODO: Update @webgpu/types
+    WebGpuSystem.context.configure({
       device: WebGpuSystem.device,
       format: "bgra8unorm" as GPUTextureFormat
     });
@@ -120,6 +128,8 @@ export default class WebGpuSystem extends System<[Transform, Mesh]> {
    * Draw all active primitive views
    */
   public onUpdate(entities: [Transform, Mesh][], timePassed: number): void {
+    // TODO: Update @webgpu/types
+    // @ts-ignore
     WebGpuSystem.textureView = WebGpuSystem.context.getCurrentTexture().createView();
     WebGpuSystem.depthView = WebGpuSystem.device.createTexture({
       label: "depthTexture",

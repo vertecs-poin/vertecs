@@ -6,8 +6,9 @@ export default class CannonBody extends Component {
 
   public constructor() {
     super();
-    this.#body = new Body({ mass: 8, material: { restitution: 0.99, id: 0, name: "test", friction: 0 } });
+    this.#body = new Body({ mass: 8 });
     this.#body.addShape(new Box(new Vec3(.5, .5, .5)));
+    this.#body.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
   }
 
   public get body(): Body {

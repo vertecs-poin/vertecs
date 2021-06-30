@@ -26,7 +26,6 @@ export default class PointLight extends LightSource {
     transform.getWorldPosition(this.#currentPositionCameraSpace);
     if (!vec3.equals(this.#lastPositionCameraSpace, this.#currentPositionCameraSpace)) {
       new Float32Array(this.#data).set([...this.$color, this.$intensity, ...this.#currentPositionCameraSpace, this.#range]);
-      console.debug(this.#data);
     }
   }
 

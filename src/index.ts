@@ -1,4 +1,5 @@
 export * from "./ecs";
+export * from "./canvas";
 export * from "./gltf";
 export * from "./math";
 export * from "./utils";

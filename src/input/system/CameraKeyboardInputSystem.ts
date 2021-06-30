@@ -7,8 +7,8 @@ import { Entity } from "../../ecs";
 export default class CameraKeyboardInputSystem extends KeyboardInputHandlerSystem<[CameraComponent, Transform]> {
   #currentCameraIndex: number;
 
-  public constructor() {
-    super([CameraComponent, Transform], 16);
+  public constructor(tps?: number) {
+    super([CameraComponent, Transform], tps);
     this.#currentCameraIndex = 0;
   }
 

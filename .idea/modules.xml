@@ -5,7 +5,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/vertecs.iml" filepath="$PROJECT_DIR$/.idea/vertecs.iml" />
       <module fileurl="file://$PROJECT_DIR$/../vertecs-example/.idea/vertecs-example.iml" filepath="$PROJECT_DIR$/../vertecs-example/.idea/vertecs-example.iml" />
       <module fileurl="file://$PROJECT_DIR$/../vertecs-examples/.idea/vertecs-examples.iml" filepath="$PROJECT_DIR$/../vertecs-examples/.idea/vertecs-examples.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../../webgpu-samples/.idea/webgpu-samples.iml" filepath="$PROJECT_DIR$/../../webgpu-samples/.idea/webgpu-samples.iml" />
     </modules>
   </component>
 </project>

@@ -30,14 +30,14 @@ describe("Transform", () => {
   describe("Translation", () => {
     describe("Simple", () => {
       it("should be at origin (0, 0, 0)", () => {
-        const worldPosition = transform.getWorldPosition(vec3.create());
+        const worldPosition = transform.getWorldTranslation(vec3.create());
 
         assert.sameOrderedMembers(Array.from(worldPosition), [0, 0, 0]);
       });
 
       it("should translate by 2 units in the y axis", () => {
         transform.translate([0, 2, 0]);
-        const worldPosition = transform.getWorldPosition(vec3.create());
+        const worldPosition = transform.getWorldTranslation(vec3.create());
 
         assert.sameOrderedMembers(Array.from(worldPosition), [0, 2, 0]);
       });
@@ -70,7 +70,7 @@ describe("Transform", () => {
 
         transform.translate([0, 2, 0]);
 
-        assert.sameOrderedMembers(Array.from(transform.getWorldPosition(vec3.create())), [0, 2, 0]);
+        assert.sameOrderedMembers(Array.from(transform.getWorldTranslation(vec3.create())), [0, 2, 0]);
       });
     });
   });

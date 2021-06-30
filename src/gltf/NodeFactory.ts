@@ -28,10 +28,12 @@ export default class NodeFactory {
 
     let transform;
     if (json.matrix) {
+      // @ts-ignore
       transform = Transform.fromMat4(json.matrix ?? NodeFactory.DEFAULT_MATRIX);
     } else {
       transform = new Transform(
         undefined,
+        // @ts-ignore
         json.translation?.map(Number) ?? NodeFactory.DEFAULT_TRANSLATION,
         json.rotation?.map(Number) ?? NodeFactory.DEFAULT_ROTATION,
         json.scale?.map(Number) ?? NodeFactory.DEFAULT_SCALE

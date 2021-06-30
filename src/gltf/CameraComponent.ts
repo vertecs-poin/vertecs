@@ -1,4 +1,4 @@
-import { mat4 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 import { Component, Entity } from "../ecs";
 import GltfExtension from "./GltfExtension";
 import { Transform } from "../math";
@@ -12,9 +12,7 @@ export interface CameraJson extends GltfOptions {
     zfar: number;
     znear: number;
   }
-  orthographic?: {
-
-  }
+  orthographic?: {}
 }
 
 export default class CameraComponent extends Component {
@@ -23,6 +21,7 @@ export default class CameraComponent extends Component {
   readonly #type: string;
   #name?: string;
   #extras?: any;
+  #lookAt: vec3;
 
   public constructor(type: string, orthographic?: any, perspective?: any, name?: string, extras?: any) {
     super();
@@ -30,6 +29,7 @@ export default class CameraComponent extends Component {
     this.#viewMatrix = mat4.create();
     this.#type = type;
     this.#extras = extras;
+    this.#lookAt = vec3.fromValues(0, 0, 0);
     if (type === "perspective") {
       if (perspective) {
         this.#projectionMatrix = mat4.perspective(
@@ -42,7 +42,7 @@ export default class CameraComponent extends Component {
       }
     } else if (type === "orthographic") {
       if (orthographic) {
-        this.#projectionMatrix = mat4.orthoZO(
+        this.#projectionMatrix = mat4.ortho(
           mat4.create(),
           -orthographic.xmag, orthographic.xmag,
           -orthographic.ymag, orthographic.ymag,
@@ -78,12 +78,21 @@ export default class CameraComponent extends Component {
   }
 
   public getViewMatrix(transform: Transform): mat4 {
-    const cameraTransform = transform.getModelToWorldMatrix();
-    const copy = mat4.copy(this.#viewMatrix, cameraTransform);
-    copy[12] *= -1;
-    copy[13] *= -1;
-    copy[14] *= -1;
+    const parent = transform.parent;
+    const cameraPosition = transform.getWorldTranslation(vec3.create());
+    vec3.transformQuat(cameraPosition, cameraPosition, transform.rotation);
+
+    // Make camera look at parent entity
+    if (parent) {
+      this.lookAt = parent.getWorldTranslation(vec3.create());
+    }
+
+    mat4.lookAt(this.#viewMatrix, cameraPosition, this.#lookAt, [0, 1, 0]);
     return this.#viewMatrix;
+  }
+
+  public set lookAt(lookAt: vec3) {
+    vec3.copy(this.#lookAt, lookAt);
   }
 
   public get extras(): any {

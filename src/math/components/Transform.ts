@@ -128,13 +128,16 @@ export default class Transform extends Component {
     this.#dirty = true;
   }
 
+  /**
+   * Set this transform position relative to the world instead of the model
+   * @param target The world position
+   */
   public setWorldPosition(target: vec3): void {
-    const worldToModel = mat4.clone(this.getWorldToModelMatrix());
-    worldToModel[12] = 0;
-    worldToModel[13] = 0;
-    worldToModel[14] = 0;
-    const result = vec3.transformMat4(vec3.create(), target, worldToModel);
-    this.setPosition(result);
+    const worldToModelMatrix = this.getWorldToModelMatrix();
+    console.debug(this.#modelToWorldMatrix);
+    console.debug(worldToModelMatrix);
+    console.debug(this.parent?.rotation);
+    this.setPosition(vec3.transformMat4(target, target, worldToModelMatrix));
   }
 
   public setWorldPositionXYZ(x: number, y: number, z: number): void {
@@ -155,11 +158,25 @@ export default class Transform extends Component {
    */
   public reset(): void {
     vec3.set(this.#position, 0, 0, 0);
-    quat.set(this.#rotation, 0, 0, 0, 1);
+    this.resetRotation();
     vec3.set(this.#scaling, 1, 1, 1);
     this.#dirty = true;
   }
 
+  /**
+   * Reset to default values
+   */
+  public resetRotation(): void {
+    quat.set(this.#rotation, 0, 0, 0, 1);
+    this.#dirty = true;
+  }
+
+  /**
+   * FIXME: Only takes the z axis
+   * @param x
+   * @param y
+   * @param z
+   */
   public rotateXYZ(x: number, y: number, z: number): void {
     this.rotateX(x);
     this.rotateY(y);
@@ -175,11 +192,19 @@ export default class Transform extends Component {
     this.#dirty = true;
   }
 
+  /**
+   * Rotate this transform in the y axis
+   * @param y An angle in radians
+   */
   public rotateY(y: number): void {
     quat.rotateY(this.#rotation, quat.create(), y);
     this.#dirty = true;
   }
 
+  /**
+   * Rotate this transform in the y axis
+   * @param z An angle in radians
+   */
   public rotateZ(z: number): void {
     quat.rotateZ(this.#rotation, quat.create(), z);
     this.#dirty = true;
@@ -210,13 +235,13 @@ export default class Transform extends Component {
     this.#dirty = true;
   }
 
-  public setRotationXYZ(x: number, y: number, z: number): void {
+  public setRotationXyz(x: number, y: number, z: number): void {
     quat.identity(this.#rotation);
     quat.fromEuler(this.#rotation, x, y, z);
     this.#dirty = true;
   }
 
-  public setRotationXYZW(x: number, y: number, z: number, w: number): void {
+  public setRotationXyzw(x: number, y: number, z: number, w: number): void {
     quat.set(this.#rotation, x, y, z, w);
     this.#dirty = true;
   }
@@ -238,6 +263,13 @@ export default class Transform extends Component {
         this.#modelMatrix,
         this.#rotation, this.#position, this.#scaling
       );
+
+      // mat4.identity(this.#modelMatrix);
+      // mat4.translate(this.#modelMatrix, this.#modelMatrix, this.#position);
+      // const rotationMatrix = mat4.fromQuat(mat4.create(), this.#rotation);
+      // mat4.multiply(this.#modelMatrix, this.#modelMatrix, rotationMatrix);
+      // mat4.scale(this.#modelMatrix, this.#modelMatrix, this.#scaling);
+
       if (this.#parent) {
         // Post multiply the model to world matrix with the parent model to world matrix
         this.#parent.getModelToWorldMatrix();
@@ -254,17 +286,25 @@ export default class Transform extends Component {
   }
 
   /**
-   * Get the world position of this transform
-   * @param out The world position
+   * Get the world translation of this transform
+   * @param out The world translation
    */
-  public getWorldPosition(out: vec3): vec3 {
+  public getWorldTranslation(out: vec3): vec3 {
     return mat4.getTranslation(out, this.getModelToWorldMatrix());
   }
 
+  /**
+   * Get the world scale of this transform
+   * @param out The world scale
+   */
   public getWorldScale(out: vec3): vec3 {
     return mat4.getScaling(out, this.getModelToWorldMatrix());
   }
 
+  /**
+   * Get the world rotation of this transform
+   * @param out The world rotation
+   */
   public getWorldRotation(out: quat): quat {
     return mat4.getRotation(out, this.getModelToWorldMatrix());
   }
@@ -273,14 +313,8 @@ export default class Transform extends Component {
     vec3.transformMat4(out, position, this.getModelToWorldMatrix());
   }
 
-  public cameraLookAtXYZ(out: vec3, x: number, y: number, z: number) {
-    const lookAt = mat4.lookAt(mat4.create(), this.getWorldPosition(out), [x, y, z], [0, 1, 0]);
-    mat4.getRotation(this.#rotation, lookAt);
-    this.#dirty = true;
-  }
-
-  public lookAtXYZ(out: vec3, x: number, y: number, z: number) {
-    const lookAt = mat4.lookAt(mat4.create(), this.getWorldPosition(out), [x, y, z], [0, 1, 0]);
+  public setLookAtXyz(x: number, y: number, z: number): void {
+    const lookAt = mat4.lookAt(mat4.create(), this.#position, [x, y, z], [0, 1, 0]);
     mat4.getRotation(this.#rotation, lookAt);
     this.#dirty = true;
   }

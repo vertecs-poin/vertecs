@@ -71,7 +71,7 @@ export default class GltfFactory {
    * A list of all supported extensions
    *
    */
-  public static SUPPORTED_EXTENSIONS = [];
+  public static SUPPORTED_EXTENSIONS: string[] = [];
 
   private constructor() {
   }

@@ -2,7 +2,6 @@ import { Component, Entity, System } from "../../ecs";
 
 export default abstract class KeyboardInputHandlerSystem<T extends Component[] = []> extends System<T> {
   private buffer: KeyboardEvent[];
-  private canvas: HTMLCanvasElement | undefined;
 
   protected constructor(components: Function[], tps = 16) {
     super(components, tps);

@@ -19,7 +19,8 @@ export class Joint extends Component {
 
   public updateJointMatrix(jointGlobalTransform: mat4): void {
     const result = mat4.create();
-    mat4.mul(result, result, this.#transformOfNodeThatTheMeshIsAttachedTo.getWorldToModelMatrix());
+    // TODO: check if we can remove this
+    // mat4.mul(result, result, this.#transformOfNodeThatTheMeshIsAttachedTo.getWorldToModelMatrix());
     mat4.mul(result, result, jointGlobalTransform);
     mat4.mul(result, result, this.#inverseBindMatrix);
     this.#skin.matrices[this.#index] = result;
